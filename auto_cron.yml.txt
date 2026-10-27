@@ -1,0 +1,42 @@
+name: Auto Update Anime
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'anime_names.txt'
+
+jobs:
+  auto-update-job:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Required Libraries
+        run: pip install requests beautifulsoup4
+
+      - name: Run Auto Scraper & Healing Script
+        run: python update_anime.py
+
+      - name: Auto Commit & Push to GitHub
+        run: |
+          git config --global user.name "AnimeBot"
+          git config --global user.email "bot@greatanimezone.com"
+          git add animeData.js
+          git add anime_names.txt
+          git commit -m "🤖 Auto-updated animeData.js with new anime" || exit 0
+          git pull --rebase origin main
+          git push
+          
